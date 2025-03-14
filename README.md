@@ -91,6 +91,11 @@ le conteneur devra avoir un nom : meow
 
     azureuser@TP:/tp$ docker run --name meow -v $(pwd)/nginx2.conf:/etc/nginx/conf.d/nginx2.conf -v $(pwd)/index.html:/var/www/html/index.html --memory 512m -p 7777:7777 -d nginx
 
+## Part II : Images
+
+### Construisez votre propre Dockerfile
+
+🌞 Construire votre propre image
 
 
 
