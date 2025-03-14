@@ -97,7 +97,19 @@ le conteneur devra avoir un nom : meow
 
 🌞 Construire votre propre image
 
+Dockerfile : 
 
+    FROM debian
+
+    RUN apt update -y
+
+    RUN apt install -y apache2
+
+    COPY index.html /var/www/html/
+
+    ENTRYPOINT ["/usr/sbin/apache2ctl", "-D", "FOREGROUND"]
+    
+    EXPOSE 80
 
 
 
