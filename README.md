@@ -12,7 +12,7 @@ Retirer les installations anciennes au cas où il y en aurait :
 
 Installation de Docker
 
-    sudo apt-get update
+    azureuser@TP:~$ sudo apt-get update
     sudo apt-get install ca-certificates curl
     sudo install -m 0755 -d /etc/apt/keyrings
     sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
