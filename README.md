@@ -111,6 +111,13 @@ Dockerfile :
     
     EXPOSE 80
 
+## Part III : docker-compose
+
+### 2. WikiJS
+
+🌞 Installez un WikiJS en utilisant Docker
+
+
 
 
 
