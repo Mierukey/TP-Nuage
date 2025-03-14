@@ -37,7 +37,7 @@ Ajout de l'utilsateur azureuser au groupe docker
 🌞 Utiliser la commande docker run
 
     azureuser@TP:~$ docker run -p 80:80 -d nginx
-
+#
     azureuser@TP:~$ docker run -p 9999:80 -d nginx
 
 🌞 Rendre le service dispo sur internet
@@ -75,12 +75,21 @@ Après avoir créé un fichier de conf basique "nginx2.conf" :
 
     azureuser@TP:/tp$ docker run -v $(pwd)/nginx2.conf:/etc/nginx/conf.d/nginx2.conf -p 80:7777 -d nginx
 
-Après avoir créé un fichier index.html :
+Après avoir créé un fichier "index.html" :
 
     azureuser@TP:/tp$ docker run -v $(pwd)/nginx2.conf:/etc/nginx/conf.d/nginx2.conf -v $(pwd)/index.html:/var/www/html/index.html -p 80:7777 -d nginx
 
+l'application doit être joignable grâce à un partage de ports (vers le port 7777) :
 
+    azureuser@TP:/tp$ docker run -v $(pwd)/nginx2.conf:/etc/nginx/conf.d/nginx2.conf -v $(pwd)/index.html:/var/www/html/index.html -p 7777:7777 -d nginx
 
+Limiter l'utilisation de la RAM du conteneur à 512M :
+
+    docker run -v $(pwd)/nginx2.conf:/etc/nginx/conf.d/nginx2.conf -v $(pwd)/index.html:/var/www/html/index.html --memory 512m -p 7777:7777 -d nginx
+
+le conteneur devra avoir un nom : meow
+
+    azureuser@TP:/tp$ docker run --name meow -v $(pwd)/nginx2.conf:/etc/nginx/conf.d/nginx2.conf -v $(pwd)/index.html:/var/www/html/index.html --memory 512m -p 7777:7777 -d nginx
 
 
 
