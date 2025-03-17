@@ -161,7 +161,46 @@ Validé
 🌞 Construction personnalisée
 
 
+dockerfile pour l'app.py : 
 
+    FROM debian
+
+    RUN apt-get update -y && apt-get install apt-utils python3-pip -y
+
+    COPY python-app /python-app
+
+    RUN pip install --break-system-packages -r /python-app/requirements.txt
+
+    ENTRYPOINT ["python3", "/python-app/app.py"]
+
+    EXPOSE 8888
+
+docker-compose.yaml : 
+
+    version: '3.8'
+    services:
+
+      db:
+        image: redis
+        restart: unless-stopped
+        ports:
+          - '6379:6379'
+        command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+        volumes:
+          - db-data:/data
+
+      app:
+        build:
+          context: ./
+          dockerfile: dockerfile
+        depends_on:
+          - db
+        restart: unless-stopped
+        ports:
+          - "80:8888"
+
+    volumes:
+      db-data:
 
 
 
