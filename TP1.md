@@ -202,7 +202,15 @@ docker-compose.yaml :
     volumes:
       db-data:
 
+## Part IV : Docker security
 
+### 1. Le groupe docker
+
+       docker run --rm -v /:/mnt debian cat /mnt/etc/shadow
+
+### 2. Scan de vuln
+
+Les scans se trouvent dans le dossier "scans".
 
 
 
