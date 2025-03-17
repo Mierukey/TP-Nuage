@@ -211,11 +211,3 @@ docker-compose.yaml :
 ### 2. Scan de vuln
 
 Les scans se trouvent dans le dossier "scans".
-
-### 3. Petit benchmark secu
-
-
-
-
-
-
