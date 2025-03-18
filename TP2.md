@@ -154,3 +154,14 @@ Commande :
 
     az vm create -g GroupeJSPCloud -n vm2 --image Ubuntu2204 --size Standard_B1s --admin-username administrateur --ssh-key-values "C:\Users\killi\.ssh\id_rsa.pub" --custom-data "C:\Users\killi\OneDrive\Bureau\Père\B2\Cloud\cloud-init.txt"
 
+## Part III : Terraform
+
+### 2. Copy paste
+
+🌞 Constater le déploiement
+
+    az>> az vm show --name tp2magueule-vm --resource-group tp2magueule-resources -o table
+    Name            ResourceGroup          Location    Zones
+    --------------  ---------------------  ----------  -------
+    tp2magueule-vm  tp2magueule-resources  westeurope
+
