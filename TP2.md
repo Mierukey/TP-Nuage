@@ -165,3 +165,7 @@ Commande :
     --------------  ---------------------  ----------  -------
     tp2magueule-vm  tp2magueule-resources  westeurope
 
+### 3. Do it yourself
+
+🌞 Créer un plan Terraform avec les contraintes suivantes
+
