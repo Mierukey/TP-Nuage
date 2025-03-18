@@ -126,6 +126,8 @@ J'ai fais :
 
 🌞 Utilisez cloud-init pour préconfigurer la VM :
 
+cloud-init.txt :
+
     #cloud-config
     users:
       - default
@@ -151,4 +153,7 @@ J'ai fais :
       - sudo usermod -aG docker mierukey
       - docker pull alpine:latest
 
+commande : 
+
+    az vm create -g GroupeJSPCloud -n vm --image Ubuntu2204 --size Standard_B1s --admin-username admin --ssh-key-values "C:\Users\killi\.ssh\id_rsa.pub" --custom-data "C:\Users\killi\OneDrive\Bureau\Père\B2\Cloud\cloud-init.txt"
 
