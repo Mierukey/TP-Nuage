@@ -169,3 +169,192 @@ Commande :
 
 🌞 Créer un plan Terraform avec les contraintes suivantes
 
+Avec ce main.tf : 
+
+    provider "azurerm" {
+      features {}
+      subscription_id = "13d5e082-0b50-43df-ae72-234ed0d6ae90"
+    }
+    resource "azurerm_resource_group" "main" {
+      name     = "${var.prefix}-resources"
+      location = var.location
+    }
+    resource "azurerm_virtual_network" "main" {
+      name                = "${var.prefix}-network"
+      address_space       = ["10.0.0.0/16"]
+      location            = azurerm_resource_group.main.location
+      resource_group_name = azurerm_resource_group.main.name
+    }
+    resource "azurerm_subnet" "internal" {
+      name                 = "internal"
+      resource_group_name  = azurerm_resource_group.main.name
+      virtual_network_name = azurerm_virtual_network.main.name
+      address_prefixes     = ["10.0.2.0/24"]
+    }
+    resource "azurerm_public_ip" "node1_pip" {
+      name                = "${var.prefix}-node1-pip"
+      resource_group_name = azurerm_resource_group.main.name
+      location            = azurerm_resource_group.main.location
+      allocation_method   = "Static"
+    }
+    resource "azurerm_network_interface" "node1_nic" {
+      name                = "${var.prefix}-node1-nic1"
+      resource_group_name = azurerm_resource_group.main.name
+      location            = azurerm_resource_group.main.location
+      ip_configuration {
+        name                          = "primary"
+        subnet_id                     = azurerm_subnet.internal.id
+        private_ip_address_allocation = "Dynamic"
+        public_ip_address_id          = azurerm_public_ip.node1_pip.id
+      }
+    }
+    resource "azurerm_network_interface" "node2_nic" {
+      name                = "${var.prefix}-node2-nic"
+      resource_group_name = azurerm_resource_group.main.name
+      location            = azurerm_resource_group.main.location
+      ip_configuration {
+        name                          = "internal"
+        subnet_id                     = azurerm_subnet.internal.id
+        private_ip_address_allocation = "Dynamic"
+      }
+    }
+    resource "azurerm_network_security_group" "ssh" {
+      name                = "ssh"
+      location            = azurerm_resource_group.main.location
+      resource_group_name = azurerm_resource_group.main.name
+      security_rule {
+        access                     = "Allow"
+        direction                  = "Inbound"
+        name                       = "ssh"
+        priority                   = 100
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        source_address_prefix      = "*"
+        destination_port_range     = "22"
+        destination_address_prefix = "*"
+      }
+    }
+    resource "azurerm_network_interface_security_group_association" "node1_assoc" {
+      network_interface_id      = azurerm_network_interface.node1_nic.id
+      network_security_group_id = azurerm_network_security_group.ssh.id
+    }
+    resource "azurerm_network_interface_security_group_association" "node2_assoc" {
+      network_interface_id      = azurerm_network_interface.node2_nic.id
+      network_security_group_id = azurerm_network_security_group.ssh.id
+    }
+    resource "azurerm_linux_virtual_machine" "node1" {
+      name                            = "${var.prefix}-node1"
+      resource_group_name             = azurerm_resource_group.main.name
+      location                        = azurerm_resource_group.main.location
+      size                            = "Standard_F2"
+      admin_username                  = "mierukey"
+      network_interface_ids = [
+        azurerm_network_interface.node1_nic.id
+      ]
+      admin_ssh_key {
+        username   = "mierukey"
+        public_key = file("C:\\Users\\killi\\.ssh\\id_rsa.pub")
+      }
+      source_image_reference {
+        publisher = "Canonical"
+        offer     = "0001-com-ubuntu-server-jammy"
+        sku       = "22_04-lts"
+        version   = "latest"
+      }
+      os_disk {
+        storage_account_type = "Standard_LRS"
+        caching              = "ReadWrite"
+      }
+    }
+    resource "azurerm_linux_virtual_machine" "node2" {
+      name                  = "${var.prefix}-node2"
+      resource_group_name   = azurerm_resource_group.main.name
+      location              = azurerm_resource_group.main.location
+      size                  = "Standard_F2"
+      admin_username        = "mierukey"
+      network_interface_ids = [azurerm_network_interface.node2_nic.id]
+
+      admin_ssh_key {
+        username   = "mierukey"
+        public_key = file("C:\\Users\\killi\\.ssh\\id_rsa.pub")
+      }
+
+      source_image_reference {
+        publisher = "Canonical"
+        offer     = "0001-com-ubuntu-server-jammy"
+        sku       = "22_04-lts"
+        version   = "latest"
+      }
+
+      os_disk {
+        storage_account_type = "Standard_LRS"
+        caching              = "ReadWrite"
+      }
+    }
+
+et ce variables.tf :
+
+    variable "prefix" {
+      description = "da prefix"
+      default = "citron"
+    }
+    variable "location" {
+      description = "da location"
+      default = "West Europe"
+    }
+
+En faisant : 
+
+    ssh -J 20.160.83.223 10.0.2.4
+
+J'obtiens :
+
+    PS C:\Users\killi> ssh -J mierukey@20.160.83.223 mierukey@10.0.2.4
+    The authenticity of host '10.0.2.4 (<no hostip for proxy command>)' can't be established.
+    ED25519 key fingerprint is SHA256:ABsbzRKju780lbydpqleQS8xpNP0wxxsIKUXVnNCaX8.
+    This key is not known by any other names.
+    Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+    Warning: Permanently added '10.0.2.4' (ED25519) to the list of known hosts.
+    Welcome to Ubuntu 22.04.5 LTS (GNU/Linux 6.8.0-1021-azure x86_64)
+
+     * Documentation:  https://help.ubuntu.com
+     * Management:     https://landscape.canonical.com
+     * Support:        https://ubuntu.com/pro
+
+     System information as of Tue Mar 18 14:20:41 UTC 2025
+
+      System load:  0.0               Processes:             123
+      Usage of /:   5.2% of 28.89GB   Users logged in:       0
+      Memory usage: 7%                IPv4 address for eth0: 10.0.2.4
+      Swap usage:   0%
+
+    Expanded Security Maintenance for Applications is not enabled.
+
+    0 updates can be applied immediately.
+
+    Enable ESM Apps to receive additional future security updates.
+    See https://ubuntu.com/esm or run: sudo pro status
+
+
+    The list of available updates is more than a week old.
+    To check for new updates run: sudo apt update
+
+
+    The programs included with the Ubuntu system are free software;
+    the exact distribution terms for each program are described in the
+    individual files in /usr/share/doc/*/copyright.
+
+    Ubuntu comes with ABSOLUTELY NO WARRANTY, to the extent permitted by
+    applicable law.
+
+    To run a command as administrator (user "root"), use "sudo <command>".
+    See "man sudo_root" for details.
+
+    mierukey@citron-node2:~$
+
+### 4. cloud-iniiiiiiiiiiiiit
+
+🌞 Intégrer la gestion de cloud-init
+
+
+
