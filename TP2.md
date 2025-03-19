@@ -462,5 +462,170 @@ cloud-init.txt :
       - usermod -aG docker mierukinit
       - docker pull alpine:latest
 
-🌞 Moar cloud-init and Terraform configuration
+🌞 Moar cloud-init and Terraform configuration : Proof !
+
+main.tf : 
+
+    provider "azurerm" {
+      features {}
+      subscription_id = "13d5e082-0b50-43df-ae72-234ed0d6ae90"
+    }
+    resource "azurerm_resource_group" "main" {
+      name     = "${var.prefix}-resources"
+      location = var.location
+    }
+    resource "azurerm_virtual_network" "main" {
+      name                = "${var.prefix}-network"
+      address_space       = ["10.0.0.0/16"]
+      location            = azurerm_resource_group.main.location
+      resource_group_name = azurerm_resource_group.main.name
+    }
+    resource "azurerm_subnet" "internal" {
+      name                 = "internal"
+      resource_group_name  = azurerm_resource_group.main.name
+      virtual_network_name = azurerm_virtual_network.main.name
+      address_prefixes     = ["10.0.2.0/24"]
+    }
+    resource "azurerm_public_ip" "node1_pip" {
+      name                = "${var.prefix}-node1-pip"
+      resource_group_name = azurerm_resource_group.main.name
+      location            = azurerm_resource_group.main.location
+      allocation_method   = "Static"
+    }
+    resource "azurerm_network_interface" "node1_nic" {
+      name                = "${var.prefix}-node1-nic1"
+      resource_group_name = azurerm_resource_group.main.name
+      location            = azurerm_resource_group.main.location
+      ip_configuration {
+        name                          = "primary"
+        subnet_id                     = azurerm_subnet.internal.id
+        private_ip_address_allocation = "Dynamic"
+        public_ip_address_id          = azurerm_public_ip.node1_pip.id
+      }
+    }
+    resource "azurerm_network_security_group" "nsg" {
+      name                = "nsg"
+      location            = azurerm_resource_group.main.location
+      resource_group_name = azurerm_resource_group.main.name
+      security_rule {
+        access                     = "Allow"
+        direction                  = "Inbound"
+        name                       = "ssh"
+        priority                   = 100
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        source_address_prefix      = "*"
+        destination_port_range     = "22"
+        destination_address_prefix = "*"
+      }
+      security_rule {
+        access                     = "Allow"
+        direction                  = "Inbound"
+        name                       = "wikijs"
+        priority                   = 200
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        source_address_prefix      = "*"
+        destination_port_range     = "10101"
+        destination_address_prefix = "*"
+      }
+    }
+    resource "azurerm_network_interface_security_group_association" "node1_assoc" {
+      network_interface_id      = azurerm_network_interface.node1_nic.id
+      network_security_group_id = azurerm_network_security_group.nsg.id
+    }
+    resource "azurerm_linux_virtual_machine" "node1" {
+      name                            = "${var.prefix}-node1"
+      resource_group_name             = azurerm_resource_group.main.name
+      location                        = azurerm_resource_group.main.location
+      size                            = "Standard_F2"
+      admin_username                  = "mierukey"
+      network_interface_ids = [
+        azurerm_network_interface.node1_nic.id
+      ]
+      admin_ssh_key {
+        username   = "mierukey"
+        public_key = file("C:\\Users\\killi\\.ssh\\id_rsa.pub")
+      }
+      custom_data = base64encode(file("..\\cloud-init.txt"))
+      source_image_reference {
+        publisher = "Canonical"
+        offer     = "0001-com-ubuntu-server-jammy"
+        sku       = "22_04-lts"
+        version   = "latest"
+      }
+      os_disk {
+        storage_account_type = "Standard_LRS"
+        caching              = "ReadWrite"
+      }
+    }
+
+cloud-init.txt :
+
+    #cloud-config
+    users:
+      - name: mierukinit
+        sudo:
+          - ALL=(ALL) NOPASSWD:ALL
+        lock_passwd: false
+        passwd: "$6$rounds=656000$lCrdXDksMuxSdpxM$EMoIYI3TbFhw8yVxdK8nZhkNrQUPUjji2xLoqbWGh50BCoEn/NqXclvDWcXnSrfsXnOy7kSLfbZIccDoTjMSu/"
+        shell: /bin/bash
+        ssh_authorized_keys:
+          - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCjJx4EyHLlx7A5UqSu56YOXzMp5Tg8uIr+agmVGjzh1j6Gj9msUQfS2p1/jaGHbktXOjPdzIH/hJcU7B4+OXdHqqfSickOY/EvqNqRkhUnN2XSESgUCUDA6RzgvdZDPXqHGYH8P1uAHnuTajz+4XaVs8YqZE2THlkEpdH0cEeaR3pyw5cFfigOjYUVR62EPMye/jn3/nltC21GMBc+u0ua4CJI+GMIuLh/XO84sVO4s4Y/PqMaiaDlGj6NYdG7rZqDn5Be7B/ZMVeqeEsugHjAIil/mc1oSlLm6UjNwHlT/BCHTq0JkULhmLA///CHp8O/NuD1h3XaDJuOe6Tl+Mwp
+
+    write_files:
+      - path: /opt/wikijs/docker-compose.yml
+        content: |
+          services:
+
+            db:
+              image: postgres:15-alpine
+              environment:
+                POSTGRES_DB: wiki
+                POSTGRES_PASSWORD: wikijsrocks
+                POSTGRES_USER: wikijs
+              logging:
+                driver: none
+              restart: unless-stopped
+              volumes:
+                - db-data:/var/lib/postgresql/data
+
+            wiki:
+              image: ghcr.io/requarks/wiki:2
+              depends_on:
+                - db
+              environment:
+                DB_TYPE: postgres
+                DB_HOST: db
+                DB_PORT: 5432
+                DB_USER: wikijs
+                DB_PASS: wikijsrocks
+                DB_NAME: wiki
+              restart: unless-stopped
+              ports:
+                - "10101:3000"
+
+          volumes:
+            db-data:
+
+    runcmd:
+      - apt-get update
+      - apt-get install ca-certificates curl
+      - install -m 0755 -d /etc/apt/keyrings
+      - curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+      - chmod a+r /etc/apt/keyrings/docker.asc
+      - echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+      - apt-get update
+      - apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+      - usermod -aG docker mierukinit
+      - docker pull alpine:latest
+      - docker compose -f /opt/wikijs/docker-compose.yml up
+
+docker-compose.yml : Il est dans le cloud-init.txt
+
+curl du wikijs :
+
+    PS C:\Users\killi\OneDrive\Bureau\Père\B2\Cloud\terra> curl http://20.61.77.155:10101/
+    <!DOCTYPE html><html><head><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta charset="UTF-8"><meta name="viewport" content="user-scalable=yes, width=device-width, initial-scale=1, maximum-scale=5"><meta name="theme-color" content="#1976d2"><meta name="msapplication-TileColor" content="#1976d2"><meta name="msapplication-TileImage" content="/_assets/favicons/mstile-150x150.png"><title>Wiki.js Setup</title><link rel="apple-touch-icon" sizes="180x180" href="/_assets/favicons/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="192x192" href="/_assets/favicons/android-chrome-192x192.png"><link rel="icon" type="image/png" sizes="32x32" href="/_assets/favicons/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/_assets/favicons/favicon-16x16.png"><link rel="mask-icon" href="/_assets/favicons/safari-pinned-tab.svg" color="#1976d2"><link rel="manifest" href="/_assets/manifest.json"><script>var siteConfig = {"title":"Wiki.js"}
+    </script><link type="text/css" rel="stylesheet" href="/_assets/css/setup.22871ffac1b643eed4d9.css"><script type="text/javascript" src="/_assets/js/runtime.js?1738531300"></script><script type="text/javascript" src="/_assets/js/setup.js?1738531300"></script></head><body><div id="root"><setup wiki-version="2.5.306"></setup></div></body></html>
 
