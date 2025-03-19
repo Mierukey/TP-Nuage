@@ -173,7 +173,7 @@ Avec ce main.tf :
 
     provider "azurerm" {
       features {}
-      subscription_id = "id-azure-absent-car-privé"
+      subscription_id = "id-abonnement-azure"
     }
     resource "azurerm_resource_group" "main" {
       name     = "${var.prefix}-resources"
@@ -356,7 +356,7 @@ main.tf :
 
     provider "azurerm" {
       features {}
-      subscription_id = "13d5e082-0b50-43df-ae72-234ed0d6ae90"
+      subscription_id = "id-abonnement-azure"
     }
     resource "azurerm_resource_group" "main" {
       name     = "${var.prefix}-resources"
@@ -468,7 +468,7 @@ main.tf :
 
     provider "azurerm" {
       features {}
-      subscription_id = "13d5e082-0b50-43df-ae72-234ed0d6ae90"
+      subscription_id = "id-abonnement-azure"
     }
     resource "azurerm_resource_group" "main" {
       name     = "${var.prefix}-resources"
