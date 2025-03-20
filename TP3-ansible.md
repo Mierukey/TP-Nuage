@@ -309,3 +309,5 @@ Fait
 
 #### A. NGINX
 
+    PS C:\Users\killi\OneDrive\Bureau\Père\B2\Cloud\TP3> curl -k https://20.160.17.64
+    <h1>NGINX TP3 - HTTPS Test Page</h1>
