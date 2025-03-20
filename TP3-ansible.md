@@ -177,5 +177,135 @@ cloud-init.txt :
 
 #### B. Setup sur votre poste
 
+Fait
+
 ### 2. La commande ansible
+
+    mierukey@Mierukey:/mnt/c/Users/killi/OneDrive/Bureau/Père/B2/Cloud/TP3/ansible$ ansible-inventory -i hosts.ini --list
+    [WARNING]: Ansible is being run in a world writable directory
+    (/mnt/c/Users/killi/OneDrive/Bureau/Père/B2/Cloud/TP3/ansible), ignoring it as an
+    ansible.cfg source. For more information see
+    https://docs.ansible.com/ansible/devel/reference_appendices/config.html#cfg-in-world-
+    writable-dir
+    {
+        "_meta": {
+            "hostvars": {
+                "52.174.139.157": {
+                    "ansible_ssh_private_key_file": "/mnt/c/Users/killi/.ssh/id_rsa",
+                    "ansible_user": "mierukinit"
+                },
+                "52.232.20.134": {
+                    "ansible_ssh_private_key_file": "/mnt/c/Users/killi/.ssh/id_rsa",
+                    "ansible_user": "mierukinit"
+                }
+            }
+        },
+        "all": {
+            "children": [
+                "ungrouped",
+                "tp3"
+            ]
+        },
+        "tp3": {
+            "hosts": [
+                "52.174.139.157",
+                "52.232.20.134"
+            ]
+        }
+    }
+#
+    mierukey@Mierukey:/mnt/c/Users/killi/OneDrive/Bureau/Père/B2/Cloud/TP3/ansible$ ansible all -m ping -i hosts.ini
+    [WARNING]: Ansible is being run in a world writable directory
+    (/mnt/c/Users/killi/OneDrive/Bureau/Père/B2/Cloud/TP3/ansible), ignoring it as an
+    ansible.cfg source. For more information see
+    https://docs.ansible.com/ansible/devel/reference_appendices/config.html#cfg-in-world-
+    writable-dir
+    52.174.139.157 | SUCCESS => {
+        "ansible_facts": {
+            "discovered_interpreter_python": "/usr/bin/python3"
+        },
+        "changed": false,
+        "ping": "pong"
+    }
+    52.232.20.134 | SUCCESS => {
+        "ansible_facts": {
+            "discovered_interpreter_python": "/usr/bin/python3"
+        },
+        "changed": false,
+        "ping": "pong"
+    }
+#
+    mierukey@Mierukey:/mnt/c/Users/killi/OneDrive/Bureau/Père/B2/Cloud/TP3/ansible$ ansible -i hosts.ini tp3 -m setup
+    [WARNING]: Ansible is being run in a world writable directory
+    (/mnt/c/Users/killi/OneDrive/Bureau/Père/B2/Cloud/TP3/ansible), ignoring it as an
+    ansible.cfg source. For more information see
+    https://docs.ansible.com/ansible/devel/reference_appendices/config.html#cfg-in-world-
+    writable-dir
+    52.174.139.157 | SUCCESS => {
+        "ansible_facts": {
+            "ansible_all_ipv4_addresses": [
+                "10.0.2.4"
+            ],
+            "ansible_all_ipv6_addresses": [
+                "fe80::7e1e:52ff:fe73:1677"
+            ],
+            "ansible_apparmor": {
+                "status": "enabled"
+            },
+            "ansible_architecture": "x86_64",
+            "ansible_bios_date": "12/07/2018",
+            "ansible_bios_vendor": "American Megatrends Inc.",
+            "ansible_bios_version": "090008",
+            "ansible_board_asset_tag": "NA",
+            "ansible_board_name": "Virtual Machine",
+            "ansible_board_serial": "NA",
+            "ansible_board_vendor": "Microsoft Corporation",
+            "ansible_board_version": "7.0",
+            ...
+#
+    mierukey@Mierukey:/mnt/c/Users/killi/OneDrive/Bureau/Père/B2/Cloud/TP3/ansible$ ansible -i hosts.ini tp3 -m command -a 'uptime'
+    [WARNING]: Ansible is being run in a world writable directory
+    (/mnt/c/Users/killi/OneDrive/Bureau/Père/B2/Cloud/TP3/ansible), ignoring it as an
+    ansible.cfg source. For more information see
+    https://docs.ansible.com/ansible/devel/reference_appendices/config.html#cfg-in-world-
+    writable-dir
+    52.232.20.134 | CHANGED | rc=0 >>
+     13:41:33 up  1:20,  1 user,  load average: 0.00, 0.00, 0.00
+    52.174.139.157 | CHANGED | rc=0 >>
+     13:41:33 up  1:46,  1 user,  load average: 0.00, 0.00, 0.00
+
+### 3. Un premier playbook
+
+    mierukey@Mierukey:/mnt/c/Users/killi/OneDrive/Bureau/Père/B2/Cloud/TP3/ansible$ ansible-playbook -i hosts.ini first.yml
+    [WARNING]: Ansible is being run in a world writable directory
+    (/mnt/c/Users/killi/OneDrive/Bureau/Père/B2/Cloud/TP3/ansible), ignoring it as an
+    ansible.cfg source. For more information see
+    https://docs.ansible.com/ansible/devel/reference_appendices/config.html#cfg-in-world-
+    writable-dir
+    
+    PLAY [Install nginx] ******************************************************************
+    
+    TASK [Gathering Facts] ****************************************************************
+    ok: [52.232.20.134]
+    ok: [52.174.139.157]
+    
+    TASK [Install nginx] ******************************************************************
+    changed: [52.174.139.157]
+    changed: [52.232.20.134]
+    
+    TASK [Insert Index Page] **************************************************************
+    changed: [52.174.139.157]
+    changed: [52.232.20.134]
+    
+    TASK [Start NGiNX] ********************************************************************
+    ok: [52.174.139.157]
+    ok: [52.232.20.134]
+    
+    PLAY RECAP ****************************************************************************
+    52.174.139.157             : ok=4    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+    52.232.20.134              : ok=4    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+### 4. Création de nouveaux playbooks
+
+#### A. NGINX
 
