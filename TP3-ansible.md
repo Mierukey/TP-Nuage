@@ -175,3 +175,5 @@ cloud-init.txt :
       - git clone https://github.com/holmanb/vmboot.git /opt/vmboot
       - cd /opt/vmboot && ansible-playbook ubuntu.yml
 
+#### B. Setup sur votre poste
+
