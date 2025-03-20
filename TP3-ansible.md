@@ -410,3 +410,9 @@ curl :
 
     PS C:\Users\killi\OneDrive\Bureau\Père\B2\Cloud\TP3> curl -k https://20.160.17.64
     Oups la bouleeeeette
+
+#### B. MariaDB ou MySQL
+
+mysql.yml :
+
+Presque parfait
