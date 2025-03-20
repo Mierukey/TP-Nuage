@@ -309,5 +309,104 @@ Fait
 
 #### A. NGINX
 
+nginx.yml : 
+
+    ---
+    - name: Déployer nginx
+      hosts: tp3
+      become: true
+    
+      tasks:
+      - name: Installer nginx
+        apt:
+          name: nginx
+          state: present
+          update_cache: yes
+    
+      - name: Creer les dossiers de certificat
+        file:
+          path: "{{ item }}"
+          state: directory
+          owner: root
+          group: root
+          mode: '0755'
+        loop:
+          - /etc/pki/tls/certs
+          - /etc/pki/tls/private
+    
+      - name: Generer les certificats auto-signés
+        command: >
+          openssl req -x509 -nodes -days 365 -newkey rsa:2048
+          -keyout /etc/pki/tls/private/nginx-selfsigned.key
+          -out /etc/pki/tls/certs/nginx-selfsigned.crt
+          -subj "/CN=example.com"
+    
+      - name: créer le dossier racine du serv web
+        file:
+          path: /var/www/tp3_site
+          state: directory
+          owner: www-data
+          group: www-data
+          mode: '0755'
+    
+      - name: Créer la page index.html de base
+        copy:
+          dest: /var/www/tp3_site/index.html
+          content: "Oups la bouleeeeette"
+          owner: www-data
+          group: www-data
+          mode: '0644'
+    
+      - name: Déployer le fichier de conf
+        copy:
+          dest: /etc/nginx/sites-available/tp3_site
+          content: |
+            server {
+                listen 443 ssl;
+                server_name example.com;
+    
+                ssl_certificate /etc/pki/tls/certs/nginx-selfsigned.crt;
+                ssl_certificate_key /etc/pki/tls/private/nginx-selfsigned.key;
+    
+                root /var/www/tp3_site;
+                index index.html;
+    
+                location / {
+                    try_files $uri $uri/ =404;
+                }
+            }
+          owner: root
+          group: root
+          mode: '0644'
+    
+      - name: Activer la conf
+        file:
+          src: /etc/nginx/sites-available/tp3_site
+          dest: /etc/nginx/sites-enabled/tp3_site
+          state: link
+    
+      - name: Redémarrer nginx
+        systemd:
+          name: nginx
+          state: restarted
+          enabled: yes
+    
+      - name: Ouverture du port 443
+        ufw:
+          rule: allow
+          port: "443"
+          proto: tcp
+
+hosts.ini :
+
+    [tp3]
+    20.160.17.64 ansible_user=mierukinit ansible_ssh_private_key_file=/mnt/c/Users/killi/.ssh/id_rsa
+    172.201.198.10 ansible_user=mierukinit ansible_ssh_private_key_file=/mnt/c/Users/killi/.ssh/id_rsa
+
+    [web]
+    20.160.17.64 ansible_user=mierukinit ansible_ssh_private_key_file=/mnt/c/Users/killi/.ssh/id_rsa
+
+curl :
+
     PS C:\Users\killi\OneDrive\Bureau\Père\B2\Cloud\TP3> curl -k https://20.160.17.64
-    <h1>NGINX TP3 - HTTPS Test Page</h1>
+    Oups la bouleeeeette
