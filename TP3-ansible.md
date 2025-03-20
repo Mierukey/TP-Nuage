@@ -177,3 +177,5 @@ cloud-init.txt :
 
 #### B. Setup sur votre poste
 
+### 2. La commande ansible
+
