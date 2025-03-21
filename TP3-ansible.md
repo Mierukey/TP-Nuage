@@ -473,7 +473,35 @@ hosts.ini :
 
 Test ansible-playbook :
 
+    mierukey@Mierukey:/mnt/c/Users/killi/OneDrive/Bureau/Père/B2/Cloud/TP3/ansible$ ansible-playbook -i inventories/vagrant_lab/hosts.ini mysql.yml --limit db
+    [WARNING]: Ansible is being run in a world writable directory
+    (/mnt/c/Users/killi/OneDrive/Bureau/Père/B2/Cloud/TP3/ansible), ignoring it as an ansible.cfg source. For more
+    information see https://docs.ansible.com/ansible/devel/reference_appendices/config.html#cfg-in-world-writable-dir
 
+    PLAY [Déployer MySQL] **************************************************************************************************
+
+    TASK [Gathering Facts] *************************************************************************************************
+    ok: [51.124.246.64]
+
+    TASK [Installer MySQL] *************************************************************************************************
+    changed: [51.124.246.64]
+
+    TASK [Installer PyMySQL pour régler l'erreur sur le module de MySQL] ***************************************************
+    changed: [51.124.246.64]
+
+    TASK [Démarrer et activer MySQL] ***************************************************************************************
+    ok: [51.124.246.64]
+
+    TASK [Créer l'utilisateur] *********************************************************************************************
+    [WARNING]: Option column_case_sensitive is not provided. The default is now false, so the column's name will be
+    uppercased. The default will be changed to true in community.mysql 4.0.0.
+    changed: [51.124.246.64]
+
+    TASK [Créer la db] *****************************************************************************************************
+    changed: [51.124.246.64]
+
+    PLAY RECAP *************************************************************************************************************
+    51.124.246.64              : ok=6    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 
 ### 2. Structure du dépôt : rôles
 
