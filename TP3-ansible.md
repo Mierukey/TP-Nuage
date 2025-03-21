@@ -507,15 +507,86 @@ Test ansible-playbook :
 
 Test ansible-playbook :
 
+    mierukey@Mierukey:/mnt/c/Users/killi/OneDrive/Bureau/Père/B2/Cloud/TP3/ansible$ ansible-playbook -i inventories/vagrant_lab/hosts.ini playbooks/main.yml
+    [WARNING]: Ansible is being run in a world writable directory
+    (/mnt/c/Users/killi/OneDrive/Bureau/Père/B2/Cloud/TP3/ansible), ignoring it as an ansible.cfg source. For more
+    information see https://docs.ansible.com/ansible/devel/reference_appendices/config.html#cfg-in-world-writable-dir
 
+    PLAY [tp3] *************************************************************************************************************
 
-### 4. Structure du dépôt : rôle avancé
+    TASK [Gathering Facts] *************************************************************************************************
+    ok: [51.124.246.64]
+    ok: [51.124.246.80]
 
-install.yml :
+    TASK [../roles/common : Install common packages] ***********************************************************************
+    ok: [51.124.246.64] => (item=vim)
+    ok: [51.124.246.80] => (item=vim)
+    ok: [51.124.246.64] => (item=git)
+    ok: [51.124.246.80] => (item=git)
 
+    PLAY RECAP *************************************************************************************************************
+    51.124.246.64              : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+    51.124.246.80              : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 
+### 3. Structure du dépôt : variables d'inventaire
 
 Test ansible-playbook :
+
+    mierukey@Mierukey:/mnt/c/Users/killi/OneDrive/Bureau/Père/B2/Cloud/TP3/ansible$ ansible-playbook -i inventories/vagrant_lab/hosts.ini playbooks/main.yml
+    [WARNING]: Ansible is being run in a world writable directory
+    (/mnt/c/Users/killi/OneDrive/Bureau/Père/B2/Cloud/TP3/ansible), ignoring it as an ansible.cfg source. For more
+    information see https://docs.ansible.com/ansible/devel/reference_appendices/config.html#cfg-in-world-writable-dir
+
+    PLAY [tp3] *************************************************************************************************************
+
+    TASK [Gathering Facts] *************************************************************************************************
+    ok: [51.124.246.80]
+    ok: [51.124.246.64]
+
+    TASK [../roles/common : Install common packages] ***********************************************************************
+    ok: [51.124.246.80] => (item=vim)
+    ok: [51.124.246.64] => (item=vim)
+    ok: [51.124.246.80] => (item=git)
+    ok: [51.124.246.64] => (item=git)
+    ok: [51.124.246.64] => (item=rsync)
+
+    PLAY RECAP *************************************************************************************************************
+    51.124.246.64              : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+    51.124.246.80              : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+Test ansible-playbook :
+
+    mierukey@Mierukey:/mnt/c/Users/killi/OneDrive/Bureau/Père/B2/Cloud/TP3/ansible$ ansible-playbook -i inventories/vagrant_lab/hosts.ini playbooks/main.yml
+    [WARNING]: Ansible is being run in a world writable directory
+    (/mnt/c/Users/killi/OneDrive/Bureau/Père/B2/Cloud/TP3/ansible), ignoring it as an ansible.cfg source. For more
+    information see https://docs.ansible.com/ansible/devel/reference_appendices/config.html#cfg-in-world-writable-dir
+
+    PLAY [tp3] *************************************************************************************************************
+
+    TASK [Gathering Facts] *************************************************************************************************
+    ok: [51.124.246.80]
+    ok: [51.124.246.64]
+
+    TASK [../roles/common : Install common packages] ***********************************************************************
+    ok: [51.124.246.80] => (item=vim)
+    ok: [51.124.246.64] => (item=vim)
+    ok: [51.124.246.80] => (item=git)
+    ok: [51.124.246.64] => (item=git)
+    ok: [51.124.246.64] => (item=rsync)
+
+    TASK [../roles/common : Create default users] **************************************************************************
+    ok: [51.124.246.64] => (item=le_nain)
+    ok: [51.124.246.80] => (item=le_nain)
+    ok: [51.124.246.80] => (item=l_elfe)
+    ok: [51.124.246.64] => (item=l_elfe)
+    ok: [51.124.246.80] => (item=le_ranger)
+    ok: [51.124.246.64] => (item=le_ranger)
+
+    PLAY RECAP *************************************************************************************************************
+    51.124.246.64              : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+    51.124.246.80              : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+
 
 
 
