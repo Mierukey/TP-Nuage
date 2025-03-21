@@ -586,7 +586,57 @@ Test ansible-playbook :
     51.124.246.64              : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
     51.124.246.80              : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 
+### 4. Structure du dépôt : rôle avancé
 
+Test ansible-playbook :
 
+    mierukey@Mierukey:/mnt/c/Users/killi/OneDrive/Bureau/Père/B2/Cloud/TP3/ansible$ ansible-playbook -i inventories/vagrant_lab/hosts.ini playbooks/main.yml
+    [WARNING]: Ansible is being run in a world writable directory
+    (/mnt/c/Users/killi/OneDrive/Bureau/Père/B2/Cloud/TP3/ansible), ignoring it as an ansible.cfg source. For more
+    information see https://docs.ansible.com/ansible/devel/reference_appendices/config.html#cfg-in-world-writable-dir
 
+    PLAY [tp3] *************************************************************************************************************
+
+    TASK [Gathering Facts] *************************************************************************************************
+    ok: [51.124.246.80]
+    ok: [51.124.246.64]
+
+    TASK [../roles/common : Install common packages] ***********************************************************************
+    ok: [51.124.246.80] => (item=vim)
+    ok: [51.124.246.64] => (item=vim)
+    ok: [51.124.246.80] => (item=git)
+    ok: [51.124.246.64] => (item=git)
+    ok: [51.124.246.64] => (item=rsync)
+
+    TASK [../roles/common : Create default users] **************************************************************************
+    ok: [51.124.246.80] => (item=le_nain)
+    ok: [51.124.246.64] => (item=le_nain)
+    ok: [51.124.246.80] => (item=l_elfe)
+    ok: [51.124.246.64] => (item=l_elfe)
+    ok: [51.124.246.80] => (item=le_ranger)
+    ok: [51.124.246.64] => (item=le_ranger)
+
+    PLAY [web] *************************************************************************************************************
+
+    TASK [Gathering Facts] *************************************************************************************************
+    ok: [51.124.246.80]
+
+    TASK [../roles/nginx : Installer NGINX] ********************************************************************************
+    ok: [51.124.246.80]
+
+    TASK [../roles/nginx : Main NGINX config file] *************************************************************************
+    ok: [51.124.246.80]
+
+    TASK [../roles/nginx : Create webroot] *********************************************************************************
+    changed: [51.124.246.80]
+
+    TASK [../roles/nginx : Create index] ***********************************************************************************
+    changed: [51.124.246.80]
+
+    TASK [../roles/nginx : NGINX Virtual Host] *****************************************************************************
+    changed: [51.124.246.80]
+
+    PLAY RECAP *************************************************************************************************************
+    51.124.246.64              : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+    51.124.246.80              : ok=9    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 
