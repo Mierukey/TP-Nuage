@@ -415,4 +415,79 @@ curl :
 
 mysql.yml :
 
-Presque parfait
+    ---
+    - name: Déployer MySQL
+      hosts: db
+      become: true
+      tasks:
+      - name: Installer MySQL
+        ansible.builtin.apt:
+          name: mysql-server
+          state: present
+          update_cache: yes
+
+      - name: Installer PyMySQL pour régler l'erreur sur le module de MySQL
+        ansible.builtin.apt:
+          name: python3-pymysql
+          state: present
+          update_cache: yes
+
+      - name: Démarrer et activer MySQL
+        ansible.builtin.service:
+          name: "mysql"
+          state: started
+          enabled: yes
+
+      - name: Créer l'utilisateur
+        community.mysql.mysql_user:
+          name: mysqluser
+          password: "modepassonsenfou"
+          priv: "*.*:ALL"
+          host: "%"
+          state: present
+          login_unix_socket: /var/run/mysqld/mysqld.sock
+
+      - name: Créer la db
+        community.mysql.mysql_db:
+          name: db
+          state: present
+          login_user: mysqluser
+          login_password: "modepassonsenfou"
+          login_unix_socket: /var/run/mysqld/mysqld.sock
+
+hosts.ini :
+
+    [tp3]
+    40.91.208.143 ansible_user=mierukinit ansible_ssh_private_key_file=/mnt/c/Users/killi/.ssh/id_rsa
+    52.136.229.184 ansible_user=mierukinit ansible_ssh_private_key_file=/mnt/c/Users/killi/.ssh/id_rsa
+
+    [web]
+    40.91.208.143 ansible_user=mierukinit ansible_ssh_private_key_file=/mnt/c/Users/killi/.ssh/id_rsa
+
+    [db]
+    52.136.229.184 ansible_user=mierukinit ansible_ssh_private_key_file=/mnt/c/Users/killi/.ssh/id_rsa
+
+## II. Range ta chambre
+
+### 1. Structure du dépôt : inventaires
+
+Test ansible-playbook :
+
+
+
+### 2. Structure du dépôt : rôles
+
+Test ansible-playbook :
+
+
+
+### 4. Structure du dépôt : rôle avancé
+
+install.yml :
+
+
+
+Test ansible-playbook :
+
+
+
