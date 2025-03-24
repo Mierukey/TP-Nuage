@@ -905,6 +905,8 @@ Je sais plus ce que j'ai modifié d'autre et j'ai la flemme de tout mettre je va
     ETag: "67e18c1e-188"
     X-Server-IP: 10.0.2.5
     Accept-Ranges: bytes
+    
+#
 
     mierukey@Mierukey:/mnt/c/Users/killi/OneDrive/Bureau/Père/B2/Cloud/TP3/ansible$ curl -I http://104.45.11.218:8082/
     HTTP/1.1 200 OK
