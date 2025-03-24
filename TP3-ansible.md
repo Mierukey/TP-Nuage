@@ -788,13 +788,13 @@ tp3.yml :
 
 users.yml : 
 
-    - name: Créer le groupe admin
+    - name: Création du groupe admin
       become: true
       group:
         name: admin
         state: present
 
-    - name: Créer les utilisateurs
+    - name: Création des utilisateurs
       become: true
       ansible.builtin.user:
         name: "{{ item.name }}"
@@ -806,7 +806,7 @@ users.yml :
         state: present
       loop: "{{ users }}"
 
-    - name: Créer les dossiers .ssh
+    - name: Création des dossiers ssh
       become: true
       file:
         path: "{{ item.home }}/.ssh"
@@ -816,7 +816,7 @@ users.yml :
         mode: '0700'
       loop: "{{ users }}"
 
-    - name: Ajouter les clés SSH
+    - name: Ajout des clés
       become: true
       copy:
         src: "ssh_keys/{{ item.ssh_key }}"
@@ -826,7 +826,7 @@ users.yml :
         mode: '0600'
       loop: "{{ users }}"
 
-    - name: Ajouter les utilisateurs au groupe sudo
+    - name: Ajout des utilisateus au groupe sudo
       become: true
       user:
         name: "{{ item.name }}"
@@ -834,7 +834,7 @@ users.yml :
         append: yes
       loop: "{{ users }}"
 
-    - name: Activer sudo sans mot de passe
+    - name: sudo sans mdp
       become: true
       lineinfile:
         path: /etc/sudoers
