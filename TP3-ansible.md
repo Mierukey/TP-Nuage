@@ -845,3 +845,75 @@ users.yml :
 
 ### 3. Dynamic loadbalancer
 
+hosts.ini : 
+
+    [webapp]
+    20.126.128.197 ansible_user=mierukinit ansible_ssh_private_key_file=/mnt/c/Users/killi/.ssh/id_rsa
+    20.126.35.186 ansible_user=mierukinit ansible_ssh_private_key_file=/mnt/c/Users/killi/.ssh/id_rsa
+
+    [rproxy]
+    20.126.35.192 ansible_user=mierukinit ansible_ssh_private_key_file=/mnt/c/Users/killi/.ssh/id_rsa
+
+webapp.yml (Affiche l'ip du serveur pour savoir si le load balancing fonctionne) :
+
+    vhosts:
+      - nginx_servername: test
+        nginx_port: 80
+        nginx_webroot: /var/www/html/test
+        nginx_index_content: "<!DOCTYPE html><html><head><title>Load Balancing Test</title></head><body><h1>Bienvenue !</h1><p>Ce serveur tourne sur l'IP : <span id='server-ip'></span></p><script> fetch(window.location.href, { method: 'HEAD' }).then(response => {document.getElementById('server-ip').innerText = response.headers.get('X-Server-IP');}).catch(error => console.error('Erreur:', error));</script></body></html>"
+
+config.yml : 
+
+    - name: Générer la configuration du reverse proxy
+      become: true
+      ansible.builtin.template:
+        src: reverse_proxy.conf.j2
+        dest: /etc/nginx/conf.d/reverse_proxy.conf
+      notify: Restart nginx
+
+reverse_proxy.conf.j2 :
+
+    upstream application {
+        server 20.126.128.197;
+        server 20.126.35.186;
+    }
+
+    server {
+        listen 8082;
+        server_name 20.126.35.192;
+
+        location / {
+        
+            proxy_pass http://application;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_cache_bypass $http_cache_control;
+        }
+    }
+
+Je sais plus ce que j'ai modifié d'autre et j'ai la flemme de tout mettre je vais te montrer avec des curl :
+
+    mierukey@Mierukey:/mnt/c/Users/killi/OneDrive/Bureau/Père/B2/Cloud/TP3/ansible$ curl -I http://104.45.11.218:8082/
+    HTTP/1.1 200 OK
+    Server: nginx/1.18.0 (Ubuntu)
+    Date: Mon, 24 Mar 2025 16:47:24 GMT
+    Content-Type: text/html
+    Content-Length: 392
+    Connection: keep-alive
+    Last-Modified: Mon, 24 Mar 2025 16:45:18 GMT
+    ETag: "67e18c1e-188"
+    X-Server-IP: 10.0.2.5
+    Accept-Ranges: bytes
+
+    mierukey@Mierukey:/mnt/c/Users/killi/OneDrive/Bureau/Père/B2/Cloud/TP3/ansible$ curl -I http://104.45.11.218:8082/
+    HTTP/1.1 200 OK
+    Server: nginx/1.18.0 (Ubuntu)
+    Date: Mon, 24 Mar 2025 16:47:39 GMT
+    Content-Type: text/html
+    Content-Length: 392
+    Connection: keep-alive
+    Last-Modified: Mon, 24 Mar 2025 16:45:18 GMT
+    ETag: "67e18c1e-188"
+    X-Server-IP: 10.0.2.6
+    Accept-Ranges: bytes
