@@ -767,3 +767,81 @@ Test ansible-playbook :
 
     PLAY RECAP *************************************************************************************************************
     4.180.152.124              : ok=7    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+### 2. Common
+
+tp3.yml : 
+
+    users:
+      - name: chevalier
+        password: "$6$rounds=656000$lCrdXDksMuxSdpxM$EMoIYI3TbFhw8yVxdK8nZhkNrQUPUjji2xLoqbWGh50BCoEn/NqXclvDWcXnSrfsXnOy7kSLfbZIccDoTjMSu/"
+        home: /home/chevalier
+        ssh_key: chevalier.pub
+      - name: samurai
+        password: "$6$rounds=656000$lCrdXDksMuxSdpxM$EMoIYI3TbFhw8yVxdK8nZhkNrQUPUjji2xLoqbWGh50BCoEn/NqXclvDWcXnSrfsXnOy7kSLfbZIccDoTjMSu/"
+        home: /home/samurai
+        ssh_key: samurai.pub
+      - name: roi
+        password: "$6$rounds=656000$lCrdXDksMuxSdpxM$EMoIYI3TbFhw8yVxdK8nZhkNrQUPUjji2xLoqbWGh50BCoEn/NqXclvDWcXnSrfsXnOy7kSLfbZIccDoTjMSu/"
+        home: /home/roi
+        ssh_key: roi.pub
+
+users.yml : 
+
+    - name: Créer le groupe admin
+      become: true
+      group:
+        name: admin
+        state: present
+
+    - name: Créer les utilisateurs
+      become: true
+      ansible.builtin.user:
+        name: "{{ item.name }}"
+        password: "{{ item.password }}"
+        home: "{{ item.home }}"
+        shell: /bin/bash
+        groups: admin
+        append: yes
+        state: present
+      loop: "{{ users }}"
+
+    - name: Créer les dossiers .ssh
+      become: true
+      file:
+        path: "{{ item.home }}/.ssh"
+        state: directory
+        owner: "{{ item.name }}"
+        group: "{{ item.name }}"
+        mode: '0700'
+      loop: "{{ users }}"
+
+    - name: Ajouter les clés SSH
+      become: true
+      copy:
+        src: "ssh_keys/{{ item.ssh_key }}"
+        dest: "{{ item.home }}/.ssh/authorized_keys"
+        owner: "{{ item.name }}"
+        group: "{{ item.name }}"
+        mode: '0600'
+      loop: "{{ users }}"
+
+    - name: Ajouter les utilisateurs au groupe sudo
+      become: true
+      user:
+        name: "{{ item.name }}"
+        groups: sudo
+        append: yes
+      loop: "{{ users }}"
+
+    - name: Activer sudo sans mot de passe
+      become: true
+      lineinfile:
+        path: /etc/sudoers
+        regexp: '^%sudo'
+        line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+        state: present
+        validate: 'visudo -cf %s'
+
+### 3. Dynamic loadbalancer
+
