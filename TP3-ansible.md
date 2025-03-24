@@ -675,3 +675,95 @@ curl :
 
 ### 1. NGINX
 
+vhosts.yml : 
+
+    - name: Create webroot
+      become: true
+      file:
+        path: "{{ item.nginx_webroot }}"
+        state: directory
+      loop: "{{ vhosts }}"
+
+    - name: Create index
+      become: true
+      copy:
+        dest: "{{ item.nginx_webroot }}/index.html"
+        content: "{{ item.nginx_index_content }}"
+      loop: "{{ vhosts }}"
+
+    - name: NGINX Virtual Host
+      become: true
+      template:
+        src: vhost.conf.j2
+        dest: /etc/nginx/conf.d/{{ item.nginx_servername }}.conf
+      loop: "{{ vhosts }}"
+      notify: Restart Nginx
+
+config.yml : 
+
+    - name : Main NGINX config file
+      become: true
+      copy:
+        src: nginx.conf
+        dest: /etc/nginx/nginx.conf
+      notify: Restart Nginx
+
+vhost.conf.j2 :
+
+    server {
+            listen {{ item.nginx_port }} ;
+            server_name {{ item.nginx_servername }};
+
+            location / {
+                root {{ item.nginx_webroot }};
+                index index.html;
+            }
+    }
+
+<IPSERVER>.yml :
+
+    vhosts:
+      - nginx_servername: test1
+        nginx_port: 8082
+        nginx_webroot: /var/www/html/test1
+        nginx_index_content: "<h1>TEST 1</h1>"  
+      - nginx_servername: test2
+        nginx_port: 8083
+        nginx_webroot: /var/www/html/test2
+        nginx_index_content: "<h1>TEST 2</h1>"
+
+Test ansible-playbook :
+
+    mierukey@Mierukey:/mnt/c/Users/killi/OneDrive/Bureau/Père/B2/Cloud/TP3/ansible$ ansible-playbook -i inventories/vagrant_lab/hosts.ini  playbooks/main.yml
+    [WARNING]: Ansible is being run in a world writable directory
+    (/mnt/c/Users/killi/OneDrive/Bureau/Père/B2/Cloud/TP3/ansible), ignoring it as an ansible.cfg source. For more
+    information see https://docs.ansible.com/ansible/devel/reference_appendices/config.html#cfg-in-world-writable-dir
+
+    PLAY [web] *************************************************************************************************************
+
+    TASK [Gathering Facts] *************************************************************************************************
+    ok: [4.180.152.124]
+
+    TASK [../roles/nginx : Installer NGINX] ********************************************************************************
+    ok: [4.180.152.124]
+
+    TASK [../roles/nginx : Main NGINX config file] *************************************************************************
+    changed: [4.180.152.124]
+
+    TASK [../roles/nginx : Create webroot] *********************************************************************************
+    ok: [4.180.152.124] => (item={'nginx_servername': 'test1', 'nginx_port': 8082, 'nginx_webroot': '/var/www/html/test1', 'nginx_index_content': '<h1>TEST 1</h1>'})
+    ok: [4.180.152.124] => (item={'nginx_servername': 'test2', 'nginx_port': 8083, 'nginx_webroot': '/var/www/html/test2', 'nginx_index_content': '<h1>TEST 2</h1>'})
+
+    TASK [../roles/nginx : Create index] ***********************************************************************************
+    ok: [4.180.152.124] => (item={'nginx_servername': 'test1', 'nginx_port': 8082, 'nginx_webroot': '/var/www/html/test1', 'nginx_index_content': '<h1>TEST 1</h1>'})
+    ok: [4.180.152.124] => (item={'nginx_servername': 'test2', 'nginx_port': 8083, 'nginx_webroot': '/var/www/html/test2', 'nginx_index_content': '<h1>TEST 2</h1>'})
+
+    TASK [../roles/nginx : NGINX Virtual Host] *****************************************************************************
+    ok: [4.180.152.124] => (item={'nginx_servername': 'test1', 'nginx_port': 8082, 'nginx_webroot': '/var/www/html/test1', 'nginx_index_content': '<h1>TEST 1</h1>'})
+    ok: [4.180.152.124] => (item={'nginx_servername': 'test2', 'nginx_port': 8083, 'nginx_webroot': '/var/www/html/test2', 'nginx_index_content': '<h1>TEST 2</h1>'})
+
+    RUNNING HANDLER [../roles/nginx : Restart Nginx] ***********************************************************************
+    changed: [4.180.152.124]
+
+    PLAY RECAP *************************************************************************************************************
+    4.180.152.124              : ok=7    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
